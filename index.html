@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">    
+    <title>The Price for Living</title>
+    <meta name="apple-mobile-web-app-title" content="The Price for Living">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="apple-touch-icon" href="static/img/logo.png">
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="static/css/style.css">
+</head>
+<body>
+    <div class="sheet-container">
+        <header>
+            <div class="game-title">THE PRICE FOR LIVING</div>
+            <div class="title">SCHEDA DEL PERSONAGGIO</div>
+            <div class="top-controls">
+                <div>
+                    <label>NOME:</label>
+                    <input type="text" id="char-name" placeholder="Nome Personaggio" oninput="saveInventory()">
+                </div>
+                <div>
+                    <button class="status-btn" onclick="toggleStatusPanel()">GESTISCI STATUS E MALUS</button>
+                </div>
+            </div>
+            
+            <div id="status-panel" class="status-panel" style="display: none;">
+                <div class="status-grid">
+                    <div class="status-group">
+                        <h4>Traumi Fisici</h4>
+                        <label><input type="checkbox" id="st-ferito" onchange="updateSheet()"> Ferito</label>
+                        <label>Sanguinante (0-3) <input type="number" id="st-sanguinante" min="0" max="3" value="0" onchange="updateSheet()"></label>
+                        <label><input type="checkbox" id="st-moribondo" onchange="updateSheet()"> Moribondo</label>
+                        <label><input type="checkbox" id="st-stanco" onchange="updateSheet()"> Stanco</label>
+                    </div>
+                    <div class="status-group">
+                        <h4>Stato Mentale</h4>
+                        <label><input type="checkbox" id="st-disorientato" onchange="updateSheet()"> Disorientato</label>
+                        <label><input type="checkbox" id="st-spaventato" onchange="updateSheet()"> Spaventato</label>
+                    </div>
+                    <div class="status-group">
+                        <h4>Malattie</h4>
+                        <label><input type="checkbox" id="st-febbre" onchange="updateSheet()"> Febbre</label>
+                        <label><input type="checkbox" id="st-polmonite" onchange="updateSheet()"> Polmonite</label>
+                        <label><input type="checkbox" id="st-vomito" onchange="updateSheet()"> Vomito</label>
+                    </div>
+                    <div class="status-group">
+                        <h4>Veleni (Stadi 0-3)</h4>
+                        <label>Intorpidente <input type="number" id="st-v-intorp" min="0" max="3" value="0" onchange="updateSheet()"></label>
+                        <label>Emo fluidificante <input type="number" id="st-v-emo" min="0" max="3" value="0" onchange="updateSheet()"></label>
+                        <label>Immuno repressore <input type="number" id="st-v-immuno" min="0" max="3" value="0" onchange="updateSheet()"></label>
+                    </div>
+                </div>
+                <div id="narrative-warnings" class="narrative-warnings" style="display: none;"></div>
+                <div id="death-warning" class="death-warning" style="display: none;">💀 IL PERSONAGGIO È MORTO (Malus fatale a -3 raggiunto) 💀</div>
+            </div>
+
+            <div class="talent-selectors">
+                <label>TALENTO 1:</label>
+                <select id="talento1-select" onchange="updateSheet()">
+                    <option value="Nessuno">-- Seleziona --</option>
+                </select>
+                
+                <label>TALENTO 2:</label>
+                <select id="talento2-select" onchange="updateSheet()">
+                    <option value="Nessuno">-- Seleziona --</option>
+                </select>
+            </div>
+        </header>
+
+        <div class="columns">
+            <div class="left-col">
+                <h3>STATISTICHE</h3>
+                <table class="stats-table">
+                    <tr>
+                        <th>Statistica</th><th>Talento 1</th><th>Talento 2</th><th>Base</th><th>Malus</th><th>Totale</th>
+                    </tr>
+                    <tbody id="stats-body"></tbody>
+                </table>
+
+                <h3>COMPETENZE ARMI</h3>
+                <table class="weapons-table">
+                    <tr><th>Tipologia</th><th>✓</th></tr>
+                    <tr><td>Armi semplici</td><td><input type="checkbox" id="wp-Armi semplici" disabled></td></tr>
+                    <tr><td>Pistole</td><td><input type="checkbox" id="wp-Pistole" disabled></td></tr>
+                    <tr><td>Armi da fuoco</td><td><input type="checkbox" id="wp-Armi da fuoco" disabled></td></tr>
+                    <tr><td>Armi militari</td><td><input type="checkbox" id="wp-Armi militari" disabled></td></tr>
+                    <tr><td>Esplosivi complessi</td><td><input type="checkbox" id="wp-Esplosivi complessi" disabled></td></tr>
+                </table>
+            </div>
+
+            <div class="right-col">
+                <h3>ABILITÀ</h3>
+                <table class="skills-table">
+                    <tr><th colspan="2">COMUNI</th><th colspan="2">UNICHE</th></tr>
+                    <tr>
+                        <td>Ascoltare (Tn)</td><td class="bonus-cell" data-stat="Tenacia">0</td>
+                        <td>Acrobazia (Ag) <input type="checkbox" id="sk-Acrobazia" disabled></td><td class="bonus-cell sk-uniq" data-stat="Agilità">0</td>
+                    </tr>
+                    <tr>
+                        <td>Cucina (Dm)</td><td class="bonus-cell" data-stat="Destrezza manuale">0</td>
+                        <td>Costruire ogg. (Dm) <input type="checkbox" id="sk-Costruire oggetti" disabled></td><td class="bonus-cell sk-uniq" data-stat="Destrezza manuale">0</td>
+                    </tr>
+                    <tr>
+                        <td>Divincolarsi (Ag)</td><td class="bonus-cell" data-stat="Agilità">0</td>
+                        <td>Costruire trap. (Dm) <input type="checkbox" id="sk-Costruire trappole" disabled></td><td class="bonus-cell sk-uniq" data-stat="Destrezza manuale">0</td>
+                    </tr>
+                    <tr>
+                        <td>Equilibrio (Ag)</td><td class="bonus-cell" data-stat="Agilità">0</td>
+                        <td>Decifrare (Co) <input type="checkbox" id="sk-Decifrare" disabled></td><td class="bonus-cell sk-uniq" data-stat="Conoscenza">0</td>
+                    </tr>
+                    <tr>
+                        <td>Guidare (Dm)</td><td class="bonus-cell" data-stat="Destrezza manuale">0</td>
+                        <td>Decodificare (Co) <input type="checkbox" id="sk-Decodificare" disabled></td><td class="bonus-cell sk-uniq" data-stat="Conoscenza">0</td>
+                    </tr>
+                    <tr>
+                        <td>Lanciare (Fo)</td><td class="bonus-cell" data-stat="Forza">0</td>
+                        <td>Manomettere (Dm) <input type="checkbox" id="sk-Manomettere" disabled></td><td class="bonus-cell sk-uniq" data-stat="Destrezza manuale">0</td>
+                    </tr>
+                    <tr>
+                        <td>Nascondersi (Ag)</td><td class="bonus-cell" data-stat="Agilità">0</td>
+                        <td>Medicare (Dm) <input type="checkbox" id="sk-Medicare" disabled></td><td class="bonus-cell sk-uniq" data-stat="Destrezza manuale">0</td>
+                    </tr>
+                    <tr>
+                        <td>Osservare (Tn)</td><td class="bonus-cell" data-stat="Tenacia">0</td>
+                        <td>Mira (Dm) <input type="checkbox" id="sk-Mira" disabled></td><td class="bonus-cell sk-uniq" data-stat="Destrezza manuale">0</td>
+                    </tr>
+                    <tr>
+                        <td>Racc. dati (Co)</td><td class="bonus-cell" data-stat="Conoscenza">0</td>
+                        <td>Prod. medicam. (Co) <input type="checkbox" id="sk-Produrre medicamento" disabled></td><td class="bonus-cell sk-uniq" data-stat="Conoscenza">0</td>
+                    </tr>
+                    <tr>
+                        <td>Scalare (Fo)</td><td class="bonus-cell" data-stat="Forza">0</td>
+                        <td>Rialzarsi (Ag) <input type="checkbox" id="sk-Rialzarsi" disabled></td><td class="bonus-cell sk-uniq" data-stat="Agilità">0</td>
+                    </tr>
+                    <tr>
+                        <td>Schivare (Ag)</td><td class="bonus-cell" data-stat="Agilità">0</td>
+                        <td>Riparare (Dm) <input type="checkbox" id="sk-Riparare" disabled></td><td class="bonus-cell sk-uniq" data-stat="Destrezza manuale">0</td>
+                    </tr>
+                    <tr>
+                        <td>/</td><td></td>
+                        <td>Rompere (Fo) <input type="checkbox" id="sk-Rompere" disabled></td><td class="bonus-cell sk-uniq" data-stat="Forza">0</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <div class="bottom-section">
+            <div class="capacities-col">
+                <div class="cap-box">
+                    <h3>CAPACITÀ TALENTO 1</h3>
+                    <ul id="cap-list-1"></ul>
+                </div>
+                <div class="cap-box">
+                    <h3>CAPACITÀ TALENTO 2</h3>
+                    <ul id="cap-list-2"></ul>
+                </div>
+            </div>
+
+            <div class="inventory-col">
+                <h3>INVENTARIO</h3>
+                <div class="inventory-header">
+                    <h4>Armi & Munizioni</h4>
+                    <button class="add-btn" onclick="addWeaponSlot()" title="Aggiungi slot arma">+</button>
+                </div>
+                <table class="inventory-table">
+                    <thead><tr><th>Arma</th><th style="width: 35%;">Colpi / Note</th><th style="width: 30px;"></th></tr></thead>
+                    <tbody id="inventory-weapons-body"></tbody>
+                </table>
+                <h4>Altri Oggetti</h4>
+                <textarea id="inv-generic" rows="5" placeholder="Scrivi qui gli altri oggetti..." oninput="saveInventory()"></textarea>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <div style="text-align: center; margin-top: 20px; margin-bottom: 20px;">
+                <button class="exit-btn" onclick="resetScheda()">RESET SCHEDA</button>
+            </div>
+            <div class="footer-credits" style="text-align: center; margin-bottom: 10px;">
+                <img src="static/img/logo.png" alt="Logo" style="width: 30px; vertical-align: middle; margin-right: 10px;">
+                EM GAMES &copy; 2026 | Developer: 
+                <a href="https://github.com/MarcoRab01" target="_blank" style="color: inherit; text-decoration: underline;">MarcoRab01</a>
+            </div>
+            <div class="footer-credits" style="text-align: center; margin-bottom: 20px;">
+                <a href="privacy.html" style="color: inherit; text-decoration: underline;">Privacy Policy</a>
+            </div>
+            <div class="footer-credits" style="text-align: center; margin-bottom: 10px;">
+                Tutti i diritti riservati.
+            </div>
+        </div>
+    </div>
+
+    <div class="dice-container">
+        <div id="dice" class="dice">6</div>
+        <button class="roll-btn" onclick="rollDice()">Tira 1d6</button>
+    </div>
+
+    <div id="toast">Scheda resettata con successo!</div>
+
+    <script src="static/js/data.js"></script>
+    <script src="static/js/script.js"></script>
+</body>
+</html>
