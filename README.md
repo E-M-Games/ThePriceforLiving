@@ -1,5 +1,3 @@
-![Copertina](copertina%20tpfl.png)
-
 ## What is this app for?
 
 This app allows you to build your character sheets completly automatically by only chosing 2 talents to combine.
