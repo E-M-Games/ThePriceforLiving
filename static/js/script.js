@@ -290,22 +290,38 @@ function showToast(messaggio) {
 }
 
 function resetScheda() {
-    if(confirm("Sei sicuro di voler resettare la scheda?")) {
-        localStorage.removeItem('rpg_sheet_inventory');
-        
-        sessionStorage.setItem('mostraToast', 'true');
-        
-        location.reload();
-    }
+    if(!confirm("Sei sicuro di voler resettare la scheda?")) return;
+
+    localStorage.removeItem('rpg_sheet_inventory');
+
+    // Reset esplicito dei campi statici: Firefox ripristina i valori dei campi
+    // form al reload, quindi li azzeriamo direttamente senza ricaricare la pagina.
+    document.getElementById('char-name').value = '';
+    document.getElementById('inv-generic').value = '';
+    document.getElementById('talento1-select').value = 'Nessuno';
+    document.getElementById('talento2-select').value = 'Nessuno';
+
+    ['st-ferito', 'st-moribondo', 'st-stanco', 'st-disorientato', 'st-spaventato',
+     'st-febbre', 'st-polmonite', 'st-vomito'].forEach(id => {
+        document.getElementById(id).checked = false;
+    });
+
+    ['st-sanguinante', 'st-v-intorp', 'st-v-emo', 'st-v-immuno'].forEach(id => {
+        document.getElementById(id).value = 0;
+    });
+
+    // Ricostruisce l'inventario armi allo stato iniziale (3 slot vuoti)
+    document.getElementById('inventory-weapons-body').innerHTML = '';
+    addWeaponSlot(); addWeaponSlot(); addWeaponSlot();
+
+    // Ricalcola stats/checkbox/capacità/malus e persiste lo stato azzerato
+    updateSheet();
+
+    showToast("Scheda resettata!");
 }
 
 window.onload = function() {
     popolaMenuTalenti();
     loadInventory();
     updateSheet();
-
-    if (sessionStorage.getItem('mostraToast') === 'true') {
-        showToast("Scheda resettata!");
-        sessionStorage.removeItem('mostraToast');
-    }
 };
